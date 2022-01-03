@@ -472,7 +472,7 @@ class InferManager(base.InferManager):
         # TODO use setter methods
         if wsi_ext == ".svs":
             log_info("SVS detected, checking aperio.AppMag")
-            mag = int(wsi_handler.properties["aperio.AppMag"])
+            mag = int(self.wsi_handler.properties["aperio.AppMag"])
             log_info("Setting magnitude: {0} for processing".format(mag))
             self.proc_mag = mag
 

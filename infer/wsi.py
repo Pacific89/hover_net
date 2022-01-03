@@ -468,6 +468,14 @@ class InferManager(base.InferManager):
 
         start = time.perf_counter()
         self.wsi_handler = get_file_handler(wsi_path, backend=wsi_ext)
+
+        # TODO use setter methods
+        if wsi_ext == ".svs":
+            log.info("SVS detected, checking aperio.AppMag")
+            mag = int(wsi_handler.properties["aperio.AppMag"])
+            log.info("Setting magnitude: {0} for processing".format(mag))
+            self.proc_mag = mag
+
         self.wsi_proc_shape = self.wsi_handler.get_dimensions(self.proc_mag)
         self.wsi_handler.prepare_reading(
             read_mag=self.proc_mag, cache_path="%s/src_wsi.npy" % self.cache_path
@@ -742,9 +750,11 @@ class InferManager(base.InferManager):
                 log_info("Skip: %s" % wsi_base_name)
                 continue
             try:
-                log_info("Process: %s" % wsi_base_name)
-                self.process_single_file(wsi_path, msk_path, self.output_dir)
-                log_info("Finish")
+                # dont use folders (WSI extension should also be checked)
+                if os.path.isfile(wsi_path):
+                    log_info("Process: %s" % wsi_base_name)
+                    self.process_single_file(wsi_path, msk_path, self.output_dir)
+                    log_info("Finish")
             except:
                 logging.exception("Crash")
         rm_n_mkdir(self.cache_path)  # clean up all cache

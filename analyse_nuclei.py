@@ -21,6 +21,7 @@ class nuCheck():
         self.nuc_files = self.get_nuc_files()
         self.init_nuc_frame()
         self.work_patches()
+        self.save_data()
 
 
     def get_nuc_files(self):
@@ -35,7 +36,11 @@ class nuCheck():
 
         self.file_name = root.split("results")[0].split("\\")[-2]
 
-        return nuc_files
+        nuc_files_short = nuc_files[:10]
+        print("Nucleus Files: ", nuc_files)
+        print("Keeping: ", len(nuc_files_short))
+
+        return nuc_files_short
 
     def init_nuc_frame(self):
         self.property_list = ["area", "major_axis_length", "minor_axis_length", "eccentricity", "equivalent_diameter", "euler_number", "extent", "inertia_tensor", "inertia_tensor_eigvals", "moments", "moments_central", "moments_hu", "moments_normalized", "perimeter", "solidity"]
@@ -66,7 +71,6 @@ class nuCheck():
                 continue
             else:
                 inst_contour = np.array(inst_info["contour"])
-                print(inst_info)
                 # check if nucleus is at border ( coords == 0 or coords = patch_size)
                 if np.sum(inst_contour == 0) > 0 or np.sum(inst_contour == self.patch_size-1) > 0:
                     continue
@@ -76,7 +80,7 @@ class nuCheck():
                     props = pd.DataFrame.from_dict(regionprops_table(label_img, properties=self.property_list))
                     props["file_name"] = self.file_name
                     props["nuc_type"] = inst_info["type"]
-                    self.nucleus_frame = pd.concat([self.nucleus_frame, props])
+                    self.nucleus_frame = pd.concat([self.nucleus_frame, props], ignore_index=True)
                     nuc_count += 1
                     # plt.figure
                     # plt.imshow(label_img)
@@ -84,6 +88,10 @@ class nuCheck():
 
         print("Nuclei kept: ", nuc_count)
 
+    def save_data(self):
+
+        file_path = "nuc_frame.json"
+        self.nucleus_frame.to_json(file_path, orient="index")
 
 
 if __name__ == "__main__":
